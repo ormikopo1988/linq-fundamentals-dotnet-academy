@@ -38,8 +38,21 @@ namespace Cars
             var cars = ProcessCars("fuel.csv");
             var manufacturers = ProcessManufacturers("manufacturers.csv");
 
+            var selectQuery = cars.Select(c => c.Name);
+
+            var selectManyQuery = cars.SelectMany(c => c.Name); // this is the same as the writing the inner foreach loop below
+
+            foreach(var name in selectQuery)
+            {
+                foreach(var character in name)
+                {
+                    Console.WriteLine(character);
+                }
+            }
+
             var query = cars
                             .GroupBy(c => c.Manufacturer)
+                            .OrderBy(g => g.Key)
                             .Select(g => new
                             {
                                 Name = g.Key,
@@ -57,10 +70,35 @@ namespace Cars
                         m => m.Name,
                         (c, m) => new
                         {
+                            m.Headquarters,
                             c.Name,
-                            Manufacturer = m.Name
+                            c.Combined
                         }
-                    );
+                    )
+                    .OrderByDescending(c => c.Combined)
+                    .ThenBy(c => c.Name);
+
+            // I could also do this
+            //var query2 =
+            //    cars
+            //        .Join(
+            //            manufacturers,
+            //            c => c.Manufacturer,
+            //            m => m.Name,
+            //            (c, m) => new
+            //            {
+            //                Car = c,
+            //                Manufacturer = m
+            //            }
+            //        )
+            //        .OrderByDescending(c => c.Car.Combined)
+            //        .ThenBy(c => c.Car.Name)
+            //        .Select(c => new
+            //        {
+            //            c.Manufacturer.Headquarters,
+            //            c.Car.Name,
+            //            c.Car.Combined
+            //        });
 
             foreach (var result in query)
             {
@@ -73,7 +111,8 @@ namespace Cars
             foreach (var result in query2)
             {
                 Console.WriteLine($"{result.Name}");
-                Console.WriteLine($"\t Manufacturer: {result.Manufacturer}");
+                Console.WriteLine($"\t Manufacturer: {result.Headquarters}");
+                Console.WriteLine($"\t Manufacturer: {result.Combined}");
             }
 
             ////////////////////////////// Simple Examples with in-memory data sets ////////////////
